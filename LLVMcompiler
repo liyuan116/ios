@@ -1,0 +1,48 @@
+LLVM 编译过程演示
+1.预处理
+clang -E main.m  
+clang -E -fmodules main.m
+2.词法分析 (Lexical Analysis)
+clang -fmodules -fsyntax-only -Xclang -dump-tokens main.m
+3.语法分析 (Semantic Analysis)
+clang -fmodules -fsyntax-only -Xclang -ast-dump main.m
+4.IR代码生成 (CodeGen)
+CodeGen负责将语法树从顶至下遍历，翻译成LLVM IR，LLVM IR是Frontend的输出，也是LLVM Backerend的输入，桥接前后端。
+clang -S -fobjc-arc -emit-llvm main.m -o main.ll
+5 生成字节码 (LLVM Bitcode)
+clang -emit-llvm -c main.m -o main.bc
+6 生成相关汇编
+clang -S -fobjc-arc main.m -o main.s
+7 生成目标文件
+clang -fmodules -c main.m -o main.o
+8 生成可执行文件
+clang main.o -o main
+./main
+
+
+目标cpu
+-- Targeting AArch64
+-- Targeting AMDGPU
+-- Targeting ARM
+-- Targeting BPF
+-- Targeting Hexagon
+-- Targeting Mips
+-- Targeting MSP430
+-- Targeting NVPTX
+-- Targeting PowerPC
+-- Targeting Sparc
+-- Targeting SystemZ
+-- Targeting X86
+-- Targeting XCore
+
+构建release clang
+cmake ../llvm -DCMAKE_BUILD_TYPE:STRING=Release
+构建xode项目的开发环境
+cmake -G Xcode ../llvm -DCMAKE_BUILD_TYPE:STRING=MinSizeRel
+		
+
+
+
+
+
+
