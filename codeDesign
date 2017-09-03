@@ -1,0 +1,31 @@
+1.命名规范
+协议的命名不要看起来像类
+Code                                                      Commentary
+NSLocking                                                    Good.
+NSLock                                         Poor (seems like a name for a class).
+
+方法的命名要清晰
+ Code                                                       Commentary
+insertObject:atIndex:                                          Good.
+insert:at:                               Not clear; what is being inserted? what does “at” signify?
+removeObjectAtIndex:                                           Good.
+removeObject:                            Good, because it removes object referred to in argument.
+remove:                                             Not clear; what is being removed?
+
+苹果代码规范
+https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/CodingGuidelines/CodingGuidelines.html
+
+2.设计层次清晰 
+上层代码可以访问下层 下层代码不可访问上层 ；git库也是如此。 比如：theOne基础库.git->ScarCore.git->ScarCommon->ScarUnit.git
+3.模块清晰
+每个模块的粒度大小以及功能要清晰。平行的模块与模块之间不要有直接联系。上下级模块直接要有对接层。
+ e.g. 
+     滴滴出行APP<-业务<-业务流程<-业务场景<-场景组件。（每个模块层级都有自己的数据总线、UI总线、逻辑总线）
+     滴滴出行平台模块包括{类专车、顺风车、公交、租车}登业务流程模块。
+     类专车业务流程模块包括{首页模块、确认发单、等待应答、等待上车、行程中、行程结束}等场景模块。
+     首页场景模块包括{地图、用车场景、起终点}等组件模块。
+     地图组件模块包括{定位点、上车点、推荐上车点、步行导航路线、地图最佳视图、运力模块}等子模块。
+
+
+
+按照以上代码设计实现代码层次依赖解耦 模块间解耦 实现高内聚低耦合。

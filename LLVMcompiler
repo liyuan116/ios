@@ -2,15 +2,138 @@ LLVM 编译过程演示
 1.预处理
 clang -E main.m  
 clang -E -fmodules main.m
+
+@import Foundation; /* clang -E: implicit import for "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/System/Library/Frameworks/Foundation.framework/Headers/Foundation.h" */
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        NSString *llvm=@"hello world";
+        NSLog(@"%@",llvm);
+    }
+    return 0;
+}
+
 2.词法分析 (Lexical Analysis)
 clang -fmodules -fsyntax-only -Xclang -dump-tokens main.m
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        NSString *llvm=@"hello wo'		Loc=<main.m:9:1>
+
+       int 'int'	            [StartOfLine]	Loc=<main.m:11:1>
+identifier 'main'	            [LeadingSpace]	Loc=<main.m:11:5>
+   l_paren '('		                            Loc=<main.m:11:9> 
+       int 'int'		                        Loc=<main.m:11:10>
+identifier 'argc'	            [LeadingSpace]	Loc=<main.m:11:14>
+     comma ','		                            Loc=<main.m:11:18>
+     const 'const'	            [LeadingSpace]	Loc=<main.m:11:20>
+      char 'char'	            [LeadingSpace]	Loc=<main.m:11:26>
+      star '*'	                [LeadingSpace]	Loc=<main.m:11:31>
+identifier 'argv'	            [LeadingSpace]	Loc=<main.m:11:33>
+  l_square '['		                            Loc=<main.m:11:37>
+  r_s quare ']'		                            Loc=<main.m:11:38>
+   r_paren ')'		                            Loc=<main.m:11:39>
+   l_brace '{'	                [LeadingSpace]	Loc=<main.m:11:41>
+        at '@'	                [StartOfLine] [LeadingSpace]	Loc=<main.m:12:5>
+identifier 'autoreleasepool'		            Loc=<main.m:12:6>
+   l_brace '{'	                [LeadingSpace]	Loc=<main.m:12:22>
+identifier 'NSString'	        [StartOfLine] [LeadingSpace]	Loc=<main.m:13:9>
+      star '*'	                [LeadingSpace]	Loc=<main.m:13:18>
+identifier 'llvm'		                        Loc=<main.m:13:19>
+     equal '='		                            Loc=<main.m:13:23>
+        at '@'		                            Loc=<main.m:13:24>
+string_literal '"hello world"'		            Loc=<main.m:13:25>
+      semi ';'		                            Loc=<main.m:13:38>
+identifier 'NSLog'	            [StartOfLine] [LeadingSpace]	Loc=<main.m:14:9>
+   l_paren '('		                            Loc=<main.m:14:14>
+        at '@'		                            Loc=<main.m:14:15>
+string_literal '"%@"'		                    Loc=<main.m:14:16>
+     comma ','		                            Loc=<main.m:14:20>
+identifier 'llvm'		                        Loc=<main.m:14:21>
+   r_paren ')'		                            Loc=<main.m:14:25>
+      semi ';'		                            Loc=<main.m:14:26>
+   r_brace '}'	                 [StartOfLine] [LeadingSpace]	Loc=<main.m:15:5>
+    return 'return'	             [StartOfLine] [LeadingSpace]	Loc=<main.m:16:5>
+numeric_constant '0'	         [LeadingSpace]	Loc=<main.m:16:12>
+    semi ';'		             Loc=<main.m:16:13>
+ r_brace '}'	                 [StartOfLine]	Loc=<main.m:17:1>
+    eof ''		                                Loc=<main.m:17:2>
+
 3.语法分析 (Semantic Analysis)
 clang -fmodules -fsyntax-only -Xclang -ast-dump main.m
+
+TranslationUnitDecl 0x7fe8dd8036d0 <<invalid sloc>> <invalid sloc>
+|-ImportDecl 0x7fe8dd845b30 <main.m:9:1> col:1 implicit Foundation
+|-FunctionDecl 0x7fe8dd9dabf0 <line:11:1, line:17:1> line:11:5 main 'int (int, const char **)'
+| |-ParmVarDecl 0x7fe8dd845b78 <col:10, col:14> col:14 argc 'int'
+| |-ParmVarDecl 0x7fe8dd9daab0 <col:20, col:38> col:33 argv 'const char **':'const char **'
+| `-CompoundStmt 0x7fe8dd9ea3b8 <col:41, line:17:1>
+|   |-ObjCAutoreleasePoolStmt 0x7fe8dd9ea370 <line:12:5, line:15:5>
+|   | `-CompoundStmt 0x7fe8dd9ea348 <line:12:22, line:15:5>
+|   |   |-DeclStmt 0x7fe8dd9ea158 <line:13:9, col:38>
+|   |   | `-VarDecl 0x7fe8dd078560 <col:9, col:25> col:19 used llvm 'NSString *' cinit
+|   |   |   `-ObjCStringLiteral 0x7fe8dd078630 <col:24, col:25> 'NSString *'
+|   |   |     `-StringLiteral 0x7fe8dd0785f8 <col:25> 'char [12]' lvalue "hello world"
+|   |   `-CallExpr 0x7fe8dd9ea2e0 <line:14:9, col:25> 'void'
+|   |     |-ImplicitCastExpr 0x7fe8dd9ea2c8 <col:9> 'void (*)(id, ...)' <FunctionToPointerDecay>
+|   |     | `-DeclRefExpr 0x7fe8dd9ea170 <col:9> 'void (id, ...)' Function 0x7fe8dd078658 'NSLog' 'void (id, ...)'
+|   |     |-ImplicitCastExpr 0x7fe8dd9ea318 <col:15, col:16> 'id':'id' <BitCast>
+|   |     | `-ObjCStringLiteral 0x7fe8dd9ea208 <col:15, col:16> 'NSString *'
+|   |     |   `-StringLiteral 0x7fe8dd9ea1d8 <col:16> 'char [3]' lvalue "%@"
+|   |     `-ImplicitCastExpr 0x7fe8dd9ea330 <col:21> 'NSString *' <LValueToRValue>
+|   |       `-DeclRefExpr 0x7fe8dd9ea228 <col:21> 'NSString *' lvalue Var 0x7fe8dd078560 'llvm' 'NSString *'
+|   `-ReturnStmt 0x7fe8dd9ea3a0 <line:16:5, col:12>
+|     `-IntegerLiteral 0x7fe8dd9ea380 <col:12> 'int' 0
+`-<undeserialized declarations>
+
 4.IR代码生成 (CodeGen)
 CodeGen负责将语法树从顶至下遍历，翻译成LLVM IR，LLVM IR是Frontend的输出，也是LLVM Backerend的输入，桥接前后端。
+
 clang -S -fobjc-arc -emit-llvm main.m -o main.ll
+
+IR 语法关键字
+@ - 代表全局变量
+% - 代表局部变量
+alloca - 指令在当前执行的函数的堆栈帧中分配内存，当该函数返回到其调用者时，将自动释放内存。
+i32：- i 是几这个整数就会占几位，i32就是32位4字节
+align - 对齐，比如一个 int,一个 char 和一个 int。单个 int 占4个字节，为了对齐只占一个字节的 char需要向4对齐占用4字节空间。
+Load - 读出，store 写入
+icmp - 两个整数值比较，返回布尔值
+br - 选择分支，根据 cond 来转向 label，不根据条件跳转的话类似 goto
+indirectbr - 根据条件间接跳转到一个 label，而这个 label 一般是在一个数组里，所以跳转目标是可变的，由运行时决定的
+label - 代码标签
+
+define i32 @main(i32, i8**) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  %5 = alloca i8**, align 8
+  %6 = alloca %0*, align 8
+  store i32 0, i32* %3, align 4
+  store i32 %0, i32* %4, align 4
+  store i8** %1, i8*** %5, align 8
+  %7 = call i8* @objc_autoreleasePoolPush() #3
+  %8 = call i8* @objc_retain(i8* bitcast (%struct.__NSConstantString_tag* @_unnamed_cfstring_ to i8*)) #3
+  %9 = bitcast i8* %8 to %0*
+  store %0* %9, %0** %6, align 8
+  %10 = load %0*, %0** %6, align 8
+  notail call void (i8*, ...) @NSLog(i8* bitcast (%struct.__NSConstantString_tag* @_unnamed_cfstring_.2 to i8*), %0* %10)
+  %11 = bitcast %0** %6 to i8**
+  call void @objc_storeStrong(i8** %11, i8* null) #3
+  call void @objc_autoreleasePoolPop(i8* %7)
+  ret i32 0
+}
+
+clang -O3 -S -fobjc-arc -emit-llvm main.m -o main.ll
+define i32 @main(i32, i8** nocapture readnone) local_unnamed_addr #0 {
+  %3 = tail call i8* @objc_autoreleasePoolPush() #2
+  notail call void (i8*, ...) @NSLog(i8* bitcast (%struct.__NSConstantString_tag* @_unnamed_cfstring_.2 to i8*), %0* bitcast (%struct.__NSConstantString_tag* @_unnamed_cfstring_ to %0*)), !clang.arc.no_objc_arc_exceptions !7
+  tail call void @objc_autoreleasePoolPop(i8* %3) #2, !clang.arc.no_objc_arc_exceptions !7
+  ret i32 0
+}
+
 5 生成字节码 (LLVM Bitcode)
 clang -emit-llvm -c main.m -o main.bc
+
 6 生成相关汇编
 clang -S -fobjc-arc main.m -o main.s
 7 生成目标文件
@@ -19,6 +142,40 @@ clang -fmodules -c main.m -o main.o
 clang main.o -o main
 ./main
 
+
+clang -x objective-c -arch x86_64 -fmessage-length=0 -fobjc-arc… -Wno-missing-field-initializers … -DDEBUG=1 … -isysroot iPhoneSimulator10.1.sdk -fasm-blocks … -I -F -c main.m -o main.o
+
+clang 命令参数
+-x 编译语言比如objective-c
+-arch 编译的架构，比如arm7
+-f 以-f开头的。
+-W 以-W开头的，可以通过这些定制编译警告
+-D 以-D开头的，指的是预编译宏，通过这些宏可以实现条件编译
+-iPhoneSimulator10.1.sdk 编译采用的iOS SDK版本
+-I 把编译信息写入指定的辅助文件
+-F 需要的Framework
+-c 标识符指明需要运行预处理器，语法分析，类型检查，LLVM生成优化以及汇编代码生成.o文件
+-o 编译结果
+
+查看xcode对应的clang版本
+echo -en "=== $(/usr/bin/xcodebuild -version |head -n1) ===\n * '''Xcode''': $(/usr/bin/xcodebuild -version |tail -1)\n$(test -x /usr/bin/gcc-3.3 && echo " * '''gcc-3.3''': $(/usr/bin/gcc-3.3 --version 2>/dev/null |head -1)\n")$(test -x /usr/bin/gcc-4.0 && echo " * '''gcc-4.0''': $(/usr/bin/gcc-4.0 --version 2>/dev/null |head -1)\n")$(test -x /usr/bin/gcc-4.2 && echo " * '''gcc-4.2''': $(/usr/bin/gcc-4.2 --version 2>/dev/null |head -1)\n")$((test -x /usr/bin/llvm-gcc-4.2 || test -x /Developer/usr/bin/llvm-gcc-4.2) && echo " * '''llvm-gcc''': $((/usr/bin/llvm-gcc --version 2>/dev/null || /Developer/usr/bin/llvm-gcc --version 2>/dev/null) |head -1)\n")$((test -x /usr/bin/clang || test -x /Developer/usr/bin/clang) && echo " * '''clang''': $((test -x /usr/bin/clang && /usr/bin/clang --version 2>&1 || /Developer/usr/bin/clang --version 2>&1) |head -1)\n")" |tee /dev/tty |pbcopy
+=== Xcode 8.3.3 ===
+ * '''Xcode''': Build version 8E3004b
+ * '''clang''': Apple LLVM version 8.1.0 (clang-802.0.42)
+
+ Xcode对应的编译器编译器
+ https://trac.macports.org/wiki/XcodeVersionInfo#macOS10.12
+ https://opensource.apple.com/source/clang/clang-800.0.42.1/src/configure.auto.html
+
+git clone -b release_40 https://github.com/llvm-mirror/llvm.git llvm
+git clone -b release_40 https://github.com/llvm-mirror/clang.git llvm/tools/clang
+git clone -b release_40 https://github.com/llvm-mirror/clang-tools-extra.git llvm/tools/clang/tools/extra
+git clone -b release_40 https://github.com/llvm-mirror/compiler-rt.git llvm/projects/compiler-rt
+ 
+mkdir llvm_build
+cd llvm_build
+cmake ../llvm -DCMAKE_BUILD_TYPE:STRING=Release
+make -j`sysctl -n hw.logicalcpu`
 
 目标cpu
 -- Targeting AArch64
@@ -39,6 +196,11 @@ clang main.o -o main
 cmake ../llvm -DCMAKE_BUILD_TYPE:STRING=Release
 构建xode项目的开发环境
 cmake -G Xcode ../llvm -DCMAKE_BUILD_TYPE:STRING=MinSizeRel
+
+参考链接：
+https://railsware.com/blog/2014/02/28/creation-and-using-clang-plugin-with-xcode/
+
+https://mp.weixin.qq.com/s?__biz=MzIyNjY1Mjg1MA==&mid=2247483719&idx=1&sn=540e302115cedca3106eef671cbc0177&chksm=e86c669adf1bef8c5c9548cfc3bf7d0c8df111fda84ef9046f1de0fed5e789e0633d31ec729b&mpshare=1&scene=1&srcid=0108EHDQmzGYQHV7grrbuair&key=dc8f4bb13741a2a45da7f20317c2cec9eec19e0e1d1e71011523736bdbd8cd87ed69ead42877c8c7f408ccb973e57a107a8967bede1ba24358840120b796c0c01e51367d57da89455d0f5fe0c38ef6df&ascene=0&uin=MjgwOTUyMTM1&devicetype=iMac+MacBookPro11%2C4+OSX+OSX+10.12.2+build
 		
 
 
