@@ -1,0 +1,13 @@
+Runtime
+
+滴滴动态化
+http://geek.csdn.net/news/detail/129741
+Libffi的使用及其范例
+http://www.ejb.cc/archives/1502/libffi-example-of-the-use
+ABI
+https://zh.wikipedia.org/wiki/%E5%BA%94%E7%94%A8%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%8E%A5%E5%8F%A3
+JSpatch实现原理 Hybrid
+https://github.com/bang590/JSPatch/wiki/JSPatch-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3
+JSContext 是 JS 代码的执行环境，可以给 JSContext 添加方法，JS 就可以直接调用这个方法。
+JS 把要调用的类名/方法名/对象传给 OC 后，OC 调用类/对象相应的方法是通过 NSInvocation 实现。
+
